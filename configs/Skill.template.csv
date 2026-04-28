@@ -1,0 +1,4 @@
+id,name,cooldown_ms,range,base_damage,server_calc
+4001,BasicAttack,1000,2.5,10,true
+4002,Fireball,3000,8,35,true
+

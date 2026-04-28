@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package mmorpg;
+
+option csharp_namespace = "AIMMO.Proto";
+
+import "common.proto";
+
+message C2S_MoveReq {
+  int32 scene_id = 1;
+  int32 input_seq = 2;
+  Vector3 move_direction = 3;
+  Vector3 client_position = 4;
+}
+
+message S2C_EntitySnapshotNtf {
+  int32 scene_id = 1;
+  int64 server_tick = 2;
+  repeated EntitySnapshot entities = 3;
+}
+

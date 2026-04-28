@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package mmorpg;
+
+option csharp_namespace = "AIMMO.Proto";
+
+import "common.proto";
+
+message C2S_UseItemReq {
+  int32 item_id = 1;
+  int32 count = 2;
+  int64 target_entity_id = 3;
+}
+
+message S2C_InventoryChangedNtf {
+  ErrorCode code = 1;
+  repeated ItemStack items = 2;
+}
+

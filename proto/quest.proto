@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package mmorpg;
+
+option csharp_namespace = "AIMMO.Proto";
+
+import "common.proto";
+
+enum QuestState {
+  QUEST_STATE_UNKNOWN = 0;
+  QUEST_STATE_ACCEPTED = 1;
+  QUEST_STATE_COMPLETED = 2;
+  QUEST_STATE_REWARDED = 3;
+}
+
+message QuestProgress {
+  int32 quest_id = 1;
+  QuestState state = 2;
+  int32 progress = 3;
+  int32 target = 4;
+}
+
+message C2S_AcceptQuestReq {
+  int32 quest_id = 1;
+}
+
+message S2C_QuestChangedNtf {
+  ErrorCode code = 1;
+  QuestProgress quest = 2;
+}
+

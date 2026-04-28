@@ -1,0 +1,4 @@
+id,name,accept_npc_id,target_type,target_id,target_count,reward_item_id,reward_item_count
+7001,First Hunt,8001,Monster,3002,3,6002,20
+7002,Meet The Guard,8001,Npc,8002,1,6001,1
+

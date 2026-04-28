@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package mmorpg;
+
+option csharp_namespace = "AIMMO.Proto";
+
+import "common.proto";
+
+message C2S_LoginReq {
+  string account = 1;
+  string client_version = 2;
+}
+
+message S2C_LoginRes {
+  ErrorCode code = 1;
+  int64 player_id = 2;
+  string token = 3;
+  PlayerBasicData player = 4;
+}
+

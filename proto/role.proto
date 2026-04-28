@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package mmorpg;
+
+option csharp_namespace = "AIMMO.Proto";
+
+import "common.proto";
+
+message C2S_CreateRoleReq {
+  string name = 1;
+  int32 profession_id = 2;
+}
+
+message S2C_CreateRoleRes {
+  ErrorCode code = 1;
+  RoleSummary role = 2;
+}
+
+message C2S_SelectRoleReq {
+  int64 role_id = 1;
+}
+
+message S2C_SelectRoleRes {
+  ErrorCode code = 1;
+  RoleSummary role = 2;
+}
+

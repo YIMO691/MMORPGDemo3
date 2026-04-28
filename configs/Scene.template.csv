@@ -1,0 +1,4 @@
+id,name,type,resource_path,max_players,server_authoritative
+1001,StartCity,city,Scenes/StartCity,50,true
+2001,GrassField,field,Scenes/GrassField,30,true
+

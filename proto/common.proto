@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package mmorpg;
+
+option csharp_namespace = "AIMMO.Proto";
+
+enum ErrorCode {
+  ERROR_CODE_OK = 0;
+  ERROR_CODE_UNKNOWN = 1;
+  ERROR_CODE_INVALID_REQUEST = 2;
+  ERROR_CODE_UNAUTHORIZED = 3;
+  ERROR_CODE_NOT_FOUND = 4;
+}
+
+message Vector3 {
+  float x = 1;
+  float y = 2;
+  float z = 3;
+}
+
+enum EntityType {
+  ENTITY_TYPE_UNKNOWN = 0;
+  ENTITY_TYPE_PLAYER = 1;
+  ENTITY_TYPE_MONSTER = 2;
+  ENTITY_TYPE_NPC = 3;
+}
+
+message EntitySnapshot {
+  int64 entity_id = 1;
+  EntityType entity_type = 2;
+  Vector3 position = 3;
+  Vector3 rotation = 4;
+  int32 hp = 5;
+}
+
+message ItemStack {
+  int32 item_id = 1;
+  int32 count = 2;
+}
+
+message RoleSummary {
+  int64 role_id = 1;
+  string name = 2;
+  int32 level = 3;
+  int32 profession_id = 4;
+  int32 scene_id = 5;
+}
+
+message PlayerBasicData {
+  int64 player_id = 1;
+  int64 selected_role_id = 2;
+  repeated RoleSummary roles = 3;
+}
+

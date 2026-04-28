@@ -1,0 +1,4 @@
+id,name,type,max_stack,use_effect
+6001,SmallPotion,consumable,20,HealSmall
+6002,CopperCoin,currency,999999,None
+

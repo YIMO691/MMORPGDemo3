@@ -1,0 +1,4 @@
+id,name,scene_id,level,max_hp,attack,skill_id,drop_id
+3001,TrainingDummy,2001,1,100,5,4001,5001
+3002,WildBoar,2001,2,160,12,4001,5001
+

@@ -1,0 +1,4 @@
+id,item_id,min_count,max_count,weight
+5001,6002,1,5,100
+5001,6001,1,1,20
+

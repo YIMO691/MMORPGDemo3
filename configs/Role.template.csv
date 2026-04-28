@@ -1,0 +1,4 @@
+id,name,profession_id,level,spawn_scene_id,spawn_x,spawn_y,spawn_z
+1,Warrior,1001,1,1001,0,0,0
+2,Mage,1002,1,1001,2,0,0
+
