@@ -2,6 +2,7 @@
 
 ## 2026-04-28
 
+- Phase 1 Task 3：完成登录协议和接口设计，补充 auth.proto、登录接口文档和登录时序说明，暂不实现登录业务。
 - Phase 1 Task 2: prepared the Unity client skeleton documentation, including client directory planning, module boundaries, and Bootstrap/Login/RoleSelect/City responsibilities.
 - Phase 1 Task 1: created the server skeleton with .NET solution, Gateway/API, layered projects, test project, and `/health` endpoint.
 - Prepared Phase 1 Login / Role / City execution plan and environment checklist.

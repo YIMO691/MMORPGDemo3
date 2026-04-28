@@ -1,20 +1,35 @@
 syntax = "proto3";
 
-package mmorpg;
+package mmo.auth;
 
 option csharp_namespace = "AIMMO.Proto";
 
-import "common.proto";
-
+// Guest login request
 message C2S_LoginReq {
-  string account = 1;
-  string client_version = 2;
+  // Unique device identifier
+  string device_id = 1;
+  
+  // Platform information (e.g., editor, windows, android)
+  string platform = 2;
+  
+  // Application version
+  string app_version = 3;
 }
 
+// Guest login response
 message S2C_LoginRes {
-  ErrorCode code = 1;
-  int64 player_id = 2;
-  string token = 3;
-  PlayerBasicData player = 4;
+  // Result code (0 for success)
+  int32 code = 1;
+  
+  // Result message
+  string message = 2;
+  
+  // Player unique identifier
+  string player_id = 3;
+  
+  // Authentication token
+  string token = 4;
+  
+  // Server timestamp in milliseconds
+  int64 server_time = 5;
 }
-

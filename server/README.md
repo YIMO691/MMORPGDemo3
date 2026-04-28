@@ -61,9 +61,41 @@ Expected JSON:
 }
 ```
 
+## Planned Login Interface
+
+The guest login endpoint is designed for a later implementation task. It is not implemented in the current Gateway skeleton.
+
+```
+POST /api/auth/guest-login
+```
+
+Request body example:
+
+```json
+{
+  "deviceId": "dev-local-001",
+  "platform": "editor",
+  "appVersion": "0.1.0"
+}
+```
+
+Response example:
+
+```json
+{
+  "code": 0,
+  "message": "OK",
+  "playerId": "player_demo_001",
+  "token": "dev_token_demo_001",
+  "serverTime": 1730000000000
+}
+```
+
+**Note**: The current server only implements `/health`. The guest login interface is design-only in Phase 1 Task 3 and has no server business implementation yet.
+
 ## Not Implemented Yet
 
-- Login.
+- Login business logic.
 - Role selection.
 - City entry.
 - Database.
@@ -77,4 +109,4 @@ Expected JSON:
 
 ## Next Step
 
-Phase 1 Task 3: login protocol and interface design.
+Phase 1 Task 4: role selection flow design.

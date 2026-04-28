@@ -39,10 +39,17 @@ UI must not calculate final rewards, inventory state, combat damage, or quest co
 
 Network must not mutate authoritative gameplay state without server response.
 
+## Login Module Responsibilities
+
+- Collect device/platform information from the system.
+- Send login request to the server via HTTP API.
+- Handle login response and store player ID and token.
+- Transition to Role Selection screen upon successful authentication.
+- Do not create WebSocket, Redis, database, JWT, or complex authentication logic in Phase 1 Task 3.
+
 ## Feature Communication
 
 - Feature modules communicate through controller APIs and shared events.
 - Direct cross-feature object references should be avoided.
 - Shared low-level services live in `Framework/`.
 - Phase 1 flow order is `Login -> RoleSelect -> City`.
-
