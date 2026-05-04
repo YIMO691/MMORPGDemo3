@@ -7,3 +7,26 @@ __pycache__/
 *.pyc
 ai/outputs/*
 !ai/outputs/.gitkeep
+
+# .NET build outputs
+[Bb]in/
+[Oo]bj/
+
+# Claude internal
+.claude/
+
+# Unity generated files
+client/MmoDemoClient/Library/
+client/MmoDemoClient/Temp/
+client/MmoDemoClient/Obj/
+client/MmoDemoClient/Logs/
+client/MmoDemoClient/Build/
+client/MmoDemoClient/Builds/
+client/MmoDemoClient/UserSettings/
+client/MmoDemoClient/*.csproj
+client/MmoDemoClient/*.sln
+
+# Local exports and packages
+*.unitypackage
+*.apk
+*.aab

@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\MmoDemo.Application\MmoDemo.Application.csproj" />
     <ProjectReference Include="..\MmoDemo.Contracts\MmoDemo.Contracts.csproj" />
+    <ProjectReference Include="..\MmoDemo.Infrastructure\MmoDemo.Infrastructure.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

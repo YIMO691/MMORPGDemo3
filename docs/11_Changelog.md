@@ -1,5 +1,39 @@
 # Changelog
 
+## 2026-05-04 — Phase 1 Implementation Complete
+
+### Server Implementation
+- Built full layered architecture: Domain → Contracts → Application → Infrastructure → Gateway
+- Implemented 5 REST API endpoints:
+  - `POST /api/auth/guest-login` — guest login returns playerId + token
+  - `POST /api/roles/list` — returns role list for authenticated player
+  - `POST /api/roles/create` — creates role (validates name 1-12 chars, classId 1-3, max 4 roles)
+  - `POST /api/roles/select` — selects role for city entry
+  - `POST /api/scene/enter-city` — enters city, returns role display data
+- 10 integration tests (xUnit + WebApplicationFactory) — all passing
+- In-memory data stores (PostgreSQL/Redis deferred to later phases)
+- End-to-end flow verified: Login → Create Role → Select Role → Enter City
+
+### Unity Client Project Created
+- Created Unity 2022.3.62f3c1 project at `client/MmoDemoClient/`
+- C# client scripts: GameLauncher, NetworkManager (UnityWebRequest-based), UIManager, LuaManager, LoginView, RoleSelectView, CityView
+- Editor script: SceneSetup — auto-generates Bootstrap scene + UI prefabs
+- Lua scripts: login_flow.lua, role_select_flow.lua, city_flow.lua (in Resources/Lua)
+- UI prefabs: LoginView, RoleSelectView, CityView
+- Bootstrap scene: GameLauncher + EventSystem, wired to all prefabs
+
+### Documentation
+- Created comprehensive `CLAUDE.md` — AI agent reference for the project
+- Created `docs/27_Project_Engineering_Plan.md` — project planning document
+
+## 2026-04-30
+
+### Project Rules
+
+- Refined `AGENTS.md` task boundaries, validation guidance, and generated-output constraints.
+- Fixed mojibake in `AGENTS.md` and verified `docs/08_AI_Task_Rules.md` is readable UTF-8 Chinese text.
+- Expanded `.gitignore` for .NET build outputs, Unity generated folders, and local package/build artifacts.
+
 ## 2026-04-28
 
 ### Phase 1
