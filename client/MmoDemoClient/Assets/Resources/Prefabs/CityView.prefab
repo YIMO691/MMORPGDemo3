@@ -34,7 +34,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 300, y: 260}
+  m_AnchoredPosition: {x: 119, y: 205}
   m_SizeDelta: {x: 280, y: 40}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6519160082902757604
@@ -534,10 +534,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 069d720f0823a8340be59b95c1844f81, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  statusText: {fileID: 1168923864634526188}
-  acceptQuest1Btn: {fileID: 3778833263415587148}
-  acceptQuest2Btn: {fileID: 350423254645207777}
-  acceptQuest3Btn: {fileID: 355201391507982991}
 --- !u!1 &3058135717848011443
 GameObject:
   m_ObjectHideFlags: 0
@@ -1571,9 +1567,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b053ee2734e2e7c40a2f739a9ff2abbd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  chatLog: {fileID: 587908044955176782}
-  inputField: {fileID: 4281277708871090679}
-  sendButton: {fileID: 8465615357238866089}
 --- !u!1 &8332231986696805689
 GameObject:
   m_ObjectHideFlags: 0

@@ -28,74 +28,49 @@ namespace MmoDemo.Client
 
         private void BuildChatPanel()
         {
-            var chatGo = new GameObject("ChatPanel", typeof(RectTransform));
-            chatGo.transform.SetParent(transform, false);
-            var chatRt = chatGo.GetComponent<RectTransform>();
-            chatRt.anchorMin = new Vector2(0, 0);
-            chatRt.anchorMax = new Vector2(1, 1);
-            chatRt.offsetMin = Vector2.zero;
-            chatRt.offsetMax = Vector2.zero;
+            // Container fills parent canvas
+            var chatGo = NewUIChild("ChatPanel", transform);
+            Stretch(chatGo);
 
-            // Chat log (bottom-left area)
-            var logGo = new GameObject("ChatLog", typeof(RectTransform), typeof(Text));
-            logGo.transform.SetParent(chatGo.transform, false);
-            var logRt = logGo.GetComponent<RectTransform>();
-            logRt.anchorMin = new Vector2(0, 0);
-            logRt.anchorMax = new Vector2(0.4f, 0.35f);
-            logRt.offsetMin = new Vector2(10, 10);
-            logRt.offsetMax = new Vector2(0, 0);
-            var logText = logGo.GetComponent<Text>();
+            // Chat log: bottom-left, 250x130
+            var logGo = NewUIChild("ChatLog", chatGo.transform);
+            var logText = logGo.AddComponent<Text>();
             logText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             logText.fontSize = 14;
             logText.color = Color.white;
             logText.alignment = TextAnchor.LowerLeft;
+            Position(logGo, new Vector2(-390, -230), new Vector2(250, 130));
 
-            // Input field (bottom-left, below log)
-            var inputGo = new GameObject("ChatInput", typeof(RectTransform), typeof(Image), typeof(InputField));
-            inputGo.transform.SetParent(chatGo.transform, false);
-            var inputRt = inputGo.GetComponent<RectTransform>();
-            inputRt.anchorMin = new Vector2(0, 0);
-            inputRt.anchorMax = new Vector2(0.4f, 0);
-            inputRt.offsetMin = new Vector2(10, 216);
-            inputRt.offsetMax = new Vector2(-60, 246);
-            inputGo.GetComponent<Image>().color = new Color(0.15f, 0.15f, 0.2f);
-            var inputField = inputGo.GetComponent<InputField>();
+            // Input background: bottom-left, 180x28
+            var inputGo = NewUIChild("ChatInput", chatGo.transform);
+            inputGo.AddComponent<Image>().color = new Color(0.15f, 0.15f, 0.2f);
+            var inputField = inputGo.AddComponent<InputField>();
+            Position(inputGo, new Vector2(-390, -275), new Vector2(180, 28));
 
-            var inputTxtGo = new GameObject("Text", typeof(RectTransform), typeof(Text));
-            inputTxtGo.transform.SetParent(inputGo.transform, false);
-            var inputTxt = inputTxtGo.GetComponent<Text>();
+            // Input text
+            var inputTxtGo = NewUIChild("Text", inputGo.transform);
+            var inputTxt = inputTxtGo.AddComponent<Text>();
             inputTxt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             inputTxt.fontSize = 14;
             inputTxt.color = Color.white;
             inputTxt.alignment = TextAnchor.MiddleLeft;
-            inputTxt.rectTransform.anchorMin = Vector2.zero;
-            inputTxt.rectTransform.anchorMax = Vector2.one;
-            inputTxt.rectTransform.offsetMin = new Vector2(5, 2);
-            inputTxt.rectTransform.offsetMax = new Vector2(-5, -2);
+            FillParent(inputTxtGo);
             inputField.textComponent = inputTxt;
 
             // Send button
-            var sendGo = new GameObject("SendBtn", typeof(RectTransform), typeof(Image), typeof(Button));
-            sendGo.transform.SetParent(chatGo.transform, false);
-            var sendRt = sendGo.GetComponent<RectTransform>();
-            sendRt.anchorMin = new Vector2(0, 0);
-            sendRt.anchorMax = new Vector2(0.4f, 0);
-            sendRt.offsetMin = new Vector2(330, 216);
-            sendRt.offsetMax = new Vector2(390, 246);
-            sendGo.GetComponent<Image>().color = new Color(0.2f, 0.6f, 0.2f);
-            var sendBtn = sendGo.GetComponent<Button>();
+            var sendGo = NewUIChild("SendBtn", chatGo.transform);
+            sendGo.AddComponent<Image>().color = new Color(0.2f, 0.6f, 0.2f);
+            var sendBtn = sendGo.AddComponent<Button>();
+            Position(sendGo, new Vector2(-200, -275), new Vector2(55, 28));
 
-            var sendTxtGo = new GameObject("Label", typeof(RectTransform), typeof(Text));
-            sendTxtGo.transform.SetParent(sendGo.transform, false);
-            var sendTxt = sendTxtGo.GetComponent<Text>();
+            var sendTxtGo = NewUIChild("Label", sendGo.transform);
+            var sendTxt = sendTxtGo.AddComponent<Text>();
             sendTxt.text = "Send";
             sendTxt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            sendTxt.fontSize = 14;
+            sendTxt.fontSize = 13;
             sendTxt.color = Color.white;
             sendTxt.alignment = TextAnchor.MiddleCenter;
-            sendTxt.rectTransform.anchorMin = Vector2.zero;
-            sendTxt.rectTransform.anchorMax = Vector2.one;
-            sendTxt.rectTransform.sizeDelta = Vector2.zero;
+            FillParent(sendTxtGo);
 
             _chatPanel = chatGo.AddComponent<ChatPanel>();
             _chatPanel.SetUI(logText, inputField, sendBtn);
@@ -103,63 +78,77 @@ namespace MmoDemo.Client
 
         private void BuildQuestTracker()
         {
-            var questGo = new GameObject("QuestTracker", typeof(RectTransform));
-            questGo.transform.SetParent(transform, false);
-            var questRt = questGo.GetComponent<RectTransform>();
-            questRt.anchorMin = new Vector2(0, 0);
-            questRt.anchorMax = new Vector2(1, 1);
-            questRt.offsetMin = Vector2.zero;
-            questRt.offsetMax = Vector2.zero;
+            var questGo = NewUIChild("QuestTracker", transform);
+            Stretch(questGo);
 
-            // Status text (top-right)
-            var statusGo = new GameObject("QuestStatus", typeof(RectTransform), typeof(Text));
-            statusGo.transform.SetParent(questGo.transform, false);
-            var statusRt = statusGo.GetComponent<RectTransform>();
-            statusRt.anchorMin = new Vector2(0.6f, 0.8f);
-            statusRt.anchorMax = new Vector2(1, 0.95f);
-            statusRt.offsetMin = Vector2.zero;
-            statusRt.offsetMax = new Vector2(-10, 0);
-            var questText = statusGo.GetComponent<Text>();
+            // Status text: top-right
+            var statusGo = NewUIChild("QuestStatus", questGo.transform);
+            var questText = statusGo.AddComponent<Text>();
             questText.text = "Select a quest:";
             questText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            questText.fontSize = 16;
+            questText.fontSize = 15;
             questText.color = Color.yellow;
             questText.alignment = TextAnchor.UpperRight;
+            Position(statusGo, new Vector2(300, 260), new Vector2(380, 28));
 
-            // Quest buttons (top-right, stacked)
-            var q1 = CreateQuestButton(questGo.transform, "Slime x3", 0.74f);
-            var q2 = CreateQuestButton(questGo.transform, "Goblins x2", 0.68f);
-            var q3 = CreateQuestButton(questGo.transform, "Wolf x1", 0.62f);
+            // Quest buttons stacked top-right
+            var q1 = MakeQuestBtn(questGo.transform, "Slime x3", 240);
+            var q2 = MakeQuestBtn(questGo.transform, "Goblins x2", 225);
+            var q3 = MakeQuestBtn(questGo.transform, "Wolf x1", 210);
 
             _questTracker = questGo.AddComponent<QuestTracker>();
             _questTracker.SetUI(questText, q1, q2, q3);
         }
 
-        private Button CreateQuestButton(Transform parent, string label, float yAnchor)
+        private Button MakeQuestBtn(Transform parent, string label, float y)
         {
-            var go = new GameObject("QuestBtn", typeof(RectTransform), typeof(Image), typeof(Button));
-            go.transform.SetParent(parent, false);
-            var rt = go.GetComponent<RectTransform>();
-            rt.anchorMin = new Vector2(0.75f, yAnchor);
-            rt.anchorMax = new Vector2(0.95f, yAnchor + 0.05f);
-            rt.offsetMin = Vector2.zero;
-            rt.offsetMax = Vector2.zero;
-            go.GetComponent<Image>().color = new Color(0.3f, 0.3f, 0.5f);
-            var btn = go.GetComponent<Button>();
+            var go = NewUIChild("QuestBtn", parent);
+            go.AddComponent<Image>().color = new Color(0.3f, 0.3f, 0.5f);
+            var btn = go.AddComponent<Button>();
+            Position(go, new Vector2(360, y), new Vector2(140, 24));
 
-            var txtGo = new GameObject("Label", typeof(RectTransform), typeof(Text));
-            txtGo.transform.SetParent(go.transform, false);
-            var txt = txtGo.GetComponent<Text>();
+            var txtGo = NewUIChild("Label", go.transform);
+            var txt = txtGo.AddComponent<Text>();
             txt.text = label;
             txt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            txt.fontSize = 14;
+            txt.fontSize = 13;
             txt.color = Color.white;
             txt.alignment = TextAnchor.MiddleCenter;
-            txt.rectTransform.anchorMin = Vector2.zero;
-            txt.rectTransform.anchorMax = Vector2.one;
-            txt.rectTransform.sizeDelta = Vector2.zero;
-
+            FillParent(txtGo);
             return btn;
+        }
+
+        // ── UI helpers ──
+
+        private static GameObject NewUIChild(string name, Transform parent)
+        {
+            var go = new GameObject(name, typeof(RectTransform));
+            go.transform.SetParent(parent, false);
+            return go;
+        }
+
+        private static void Position(GameObject go, Vector2 pos, Vector2 size)
+        {
+            var rt = go.GetComponent<RectTransform>();
+            rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
+            rt.anchoredPosition = pos;
+            rt.sizeDelta = size;
+        }
+
+        private static void Stretch(GameObject go)
+        {
+            var rt = go.GetComponent<RectTransform>();
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.offsetMin = rt.offsetMax = Vector2.zero;
+        }
+
+        private static void FillParent(GameObject go)
+        {
+            var rt = go.GetComponent<RectTransform>();
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.offsetMin = rt.offsetMax = Vector2.zero;
         }
 
         private void OnCityEntered(EnterCityResult result, string roleId)
