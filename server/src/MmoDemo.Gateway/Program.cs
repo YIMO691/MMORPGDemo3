@@ -27,6 +27,10 @@ builder.Services.AddSingleton<MonsterService>();
 builder.Services.AddSingleton<DropService>();
 builder.Services.AddSingleton<InventoryService>();
 
+// ── Application services (Phase 4) ──
+builder.Services.AddSingleton<IQuestService, QuestService>();
+builder.Services.AddSingleton<IChatService, ChatService>();
+
 var app = builder.Build();
 app.UseWebSockets(new WebSocketOptions { KeepAliveInterval = TimeSpan.FromSeconds(30) });
 
@@ -45,7 +49,7 @@ sceneManager.AddScene(new Scene
 
 app.MapGet("/health", () => Results.Ok(new
 {
-    Status = "OK", Service = "MmoDemo.Gateway", Phase = "Phase 2"
+    Status = "OK", Service = "MmoDemo.Gateway", Phase = "Phase 4"
 }));
 
 app.MapPost("/api/auth/guest-login", (GuestLoginRequest r, IAuthService s) =>

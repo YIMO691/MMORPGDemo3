@@ -54,6 +54,15 @@ public static class MessageTypes
     public const string InventoryData = "s2c.inventory_data";
     public const string UseItem = "c2s.use_item";
     public const string EquipItem = "c2s.equip_item";
+
+    // Phase 4: Quest
+    public const string AcceptQuest = "c2s.accept_quest";
+    public const string QuestUpdated = "s2c.quest_updated";
+    public const string QuestCompleted = "s2c.quest_completed";
+
+    // Phase 4: Chat
+    public const string Chat = "c2s.chat";
+    public const string ChatBroadcast = "s2c.chat_broadcast";
 }
 
 // ── Payloads ──
@@ -289,4 +298,68 @@ public class EquipItemPayload
 {
     [JsonPropertyName("templateId")]
     public int TemplateId { get; set; }
+}
+
+// ═══════════ Phase 4 Payloads: Quest ═══════════
+
+public class AcceptQuestPayload
+{
+    [JsonPropertyName("questId")]
+    public int QuestId { get; set; }
+}
+
+public class QuestUpdatedPayload
+{
+    [JsonPropertyName("questId")]
+    public int QuestId { get; set; }
+
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = "";
+
+    [JsonPropertyName("description")]
+    public string Description { get; set; } = "";
+
+    [JsonPropertyName("progress")]
+    public int Progress { get; set; }
+
+    [JsonPropertyName("targetCount")]
+    public int TargetCount { get; set; }
+
+    [JsonPropertyName("ok")]
+    public bool Ok { get; set; }
+}
+
+public class QuestCompletedPayload
+{
+    [JsonPropertyName("questId")]
+    public int QuestId { get; set; }
+
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = "";
+
+    [JsonPropertyName("expReward")]
+    public int ExpReward { get; set; }
+
+    [JsonPropertyName("goldReward")]
+    public int GoldReward { get; set; }
+}
+
+// ═══════════ Phase 4 Payloads: Chat ═══════════
+
+public class ChatPayload
+{
+    [JsonPropertyName("text")]
+    public string Text { get; set; } = "";
+}
+
+public class ChatBroadcastPayload
+{
+    [JsonPropertyName("senderName")]
+    public string SenderName { get; set; } = "";
+
+    [JsonPropertyName("text")]
+    public string Text { get; set; } = "";
+
+    [JsonPropertyName("timestamp")]
+    public long Timestamp { get; set; }
 }

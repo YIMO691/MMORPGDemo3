@@ -1,5 +1,36 @@
 # Changelog
 
+## 2026-05-05 — Phase 4: Quest + Chat
+
+### Server — Quest System
+- QuestService: 3 kill quests (Slime x3, Goblin x2, Wolf x1) with exp + gold rewards
+- Quest flow: accept → kill target monsters → progress tracking → auto-complete → reward
+- Quest progress hooks into monster death in HandleCastSkill
+- One active quest per player, quest definitions in static dict (like skill templates)
+
+### Server — Chat System
+- ChatService: broadcast messages to all players in a scene
+- Message validation (trim whitespace, reject empty)
+- Sender name from player entity RoleName
+
+### Server — New Message Types
+| Type | Dir | Purpose |
+|------|-----|---------|
+| c2s.accept_quest / s2c.quest_updated | ⇄ | Accept quest, receive progress |
+| s2c.quest_completed | ← | Quest completion with rewards |
+| c2s.chat / s2c.chat_broadcast | ⇄ | Send chat, receive broadcast |
+
+### Tests — 18/18 passing (3 new)
+- Chat: two clients in same scene, send chat, verify broadcast received by other
+- Quest: accept quest, kill monster, verify progress update
+- Quest: accept invalid quest ID fails
+
+### Unity Client — Phase 4 Scripts
+- `ChatPanel.cs` — chat log overlay (last 20 messages), input field, send button, Enter to send
+- `QuestTracker.cs` — quest progress display, accept buttons for 3 quests
+- `GameManager.cs` — added chat/quest send methods, message handlers, public events
+- `SceneSetup.cs` — wired ChatPanel + QuestTracker into CityView prefab
+
 ## 2026-05-05 — Phase 2: Scene + Entity + Movement Sync
 
 ### Server — WebSocket Real-time Infrastructure

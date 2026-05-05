@@ -5,7 +5,7 @@ using UnityEngine;
 namespace MmoDemo.Client
 {
     /// <summary>
-    /// Phase 3 game manager. Phase 2 movement + monsters, combat, drops, inventory.
+    /// Phase 4 game manager. Phase 2 movement + monsters, combat, drops, inventory, quests, chat.
     /// </summary>
     public class GameManager : MonoBehaviour
     {
@@ -24,6 +24,11 @@ namespace MmoDemo.Client
         private int _score;
 
         public bool IsReady { get; private set; }
+
+        // Phase 4 events for UI overlays
+        public event Action<string, string> OnChatReceived; // sender, text
+        public event Action<string> OnQuestUpdated;          // status text
+        public event Action<string> OnQuestCompleted;        // completion text
 
         // ═══════════ Connection ═══════════
 
@@ -50,6 +55,12 @@ namespace MmoDemo.Client
 
         private async void SendCastSkill(string targetId, int skillId) =>
             await _ws.SendAsync("c2s.cast_skill", $"{{\"targetId\":\"{targetId}\",\"skillId\":{skillId}}}");
+
+        public async void SendChat(string text) =>
+            await _ws.SendAsync("c2s.chat", $"{{\"text\":\"{text}\"}}");
+
+        public async void SendAcceptQuest(int questId) =>
+            await _ws.SendAsync("c2s.accept_quest", $"{{\"questId\":{questId}}}");
 
         // ═══════════ Message Router ═══════════
 
@@ -83,6 +94,12 @@ namespace MmoDemo.Client
                     HandleDropPickedUp(payload); break;
                 case "s2c.inventory_data":
                     HandleInventory(payload); break;
+                case "s2c.chat_broadcast":
+                    HandleChatBroadcast(payload); break;
+                case "s2c.quest_updated":
+                    HandleQuestUpdated(payload); break;
+                case "s2c.quest_completed":
+                    HandleQuestCompleted(payload); break;
             }
         }
 
@@ -218,6 +235,39 @@ namespace MmoDemo.Client
             foreach (var item in ExtractJsonArray(p, "\"items\":"))
                 count++;
             Debug.Log($"[Game] Inventory: {count} items");
+        }
+
+        // ═══════════ Phase 4: Chat ═══════════
+
+        private void HandleChatBroadcast(string p)
+        {
+            var sender = ExtractString(p, "\"senderName\":\"");
+            var text = ExtractString(p, "\"text\":\"");
+            OnChatReceived?.Invoke(sender, text);
+        }
+
+        // ═══════════ Phase 4: Quest ═══════════
+
+        private void HandleQuestUpdated(string p)
+        {
+            var ok = ExtractBool(p, "\"ok\":");
+            if (!ok) return;
+            var name = ExtractString(p, "\"name\":\"");
+            var progress = (int)ExtractFloat(p, "\"progress\":");
+            var target = (int)ExtractFloat(p, "\"targetCount\":");
+            var desc = ExtractString(p, "\"description\":\"");
+            OnQuestUpdated?.Invoke($"{desc}: {progress}/{target}");
+            Debug.Log($"[Game] Quest updated: {name} {progress}/{target}");
+        }
+
+        private void HandleQuestCompleted(string p)
+        {
+            var name = ExtractString(p, "\"name\":\"");
+            var exp = (int)ExtractFloat(p, "\"expReward\":");
+            var gold = (int)ExtractFloat(p, "\"goldReward\":");
+            OnQuestCompleted?.Invoke($"Quest Complete: {name}! +{exp} exp, +{gold} gold");
+            _score += gold;
+            Debug.Log($"[Game] Quest completed: {name} +{exp}exp +{gold}gold");
         }
 
         // ═══════════ Snapshot ═══════════

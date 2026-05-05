@@ -14,14 +14,17 @@ public class MessageRouter : IMessageRouter
     private readonly MonsterService _monsters;
     private readonly DropService _drops;
     private readonly InventoryService _inventory;
+    private readonly IQuestService _quests;
+    private readonly IChatService _chat;
 
     public MessageRouter(IAuthService auth, IRoleRepository roles, ISceneManager scenes,
         IMovementService movement, ICombatService combat, MonsterService monsters,
-        DropService drops, InventoryService inventory)
+        DropService drops, InventoryService inventory, IQuestService quests, IChatService chat)
     {
         _auth = auth; _roles = roles; _scenes = scenes;
         _movement = movement; _combat = combat;
         _monsters = monsters; _drops = drops; _inventory = inventory;
+        _quests = quests; _chat = chat;
     }
 
     public Task<string> HandleMessageAsync(string connectionId, string type, string payloadJson, CancellationToken ct)
@@ -39,6 +42,10 @@ public class MessageRouter : IMessageRouter
             MessageTypes.GetInventory => HandleGetInventory(connectionId, payloadJson),
             MessageTypes.UseItem => HandleUseItem(connectionId, payloadJson),
             MessageTypes.EquipItem => HandleEquipItem(connectionId, payloadJson),
+
+            // Phase 4
+            MessageTypes.AcceptQuest => HandleAcceptQuest(connectionId, payloadJson),
+            MessageTypes.Chat => HandleChat(connectionId, payloadJson),
 
             _ => MakeResponse(MessageTypes.AuthResult, new AuthResultPayload { Ok = false, Message = $"Unknown: {type}" })
         };
@@ -149,6 +156,34 @@ public class MessageRouter : IMessageRouter
             // Remove monster from scene
             _scenes.RemoveEntityFromScene(player.SceneId, target.EntityId);
 
+            // Phase 4: Quest progress
+            var questUpdate = _quests.OnMonsterKilled(player.PlayerId, monster.TemplateId);
+            if (questUpdate != null)
+            {
+                var def = _quests.GetDefinition(questUpdate.QuestId);
+                _scenes.SendToConnection(cid, MakeResponse(MessageTypes.QuestUpdated,
+                    new QuestUpdatedPayload
+                    {
+                        QuestId = questUpdate.QuestId,
+                        Name = def?.Name ?? "", Description = def?.Description ?? "",
+                        Progress = questUpdate.Progress, TargetCount = def?.TargetCount ?? 0, Ok = true
+                    }));
+
+                // Check completion
+                var completed = _quests.CheckComplete(player.PlayerId);
+                if (completed != null)
+                {
+                    player.Level += 1;
+                    player.Gold += completed.GoldReward;
+                    _scenes.SendToConnection(cid, MakeResponse(MessageTypes.QuestCompleted,
+                        new QuestCompletedPayload
+                        {
+                            QuestId = completed.QuestId, Name = completed.Name,
+                            ExpReward = completed.ExpReward, GoldReward = completed.GoldReward
+                        }));
+                }
+            }
+
             // Generate drops and broadcast
             var dropped = _drops.GenerateDrops(monster.DropTableIds.FirstOrDefault());
             foreach (var itemTid in dropped)
@@ -235,6 +270,40 @@ public class MessageRouter : IMessageRouter
 
         _inventory.Equip(player.PlayerId, p.TemplateId);
         return HandleGetInventory(cid, json);
+    }
+
+    // ── Phase 4: Quest ──
+
+    private string HandleAcceptQuest(string cid, string json)
+    {
+        var p = Deserialize<AcceptQuestPayload>(json);
+        var player = _scenes.GetPlayerByConnection(cid);
+        if (player == null || p == null) return "{}";
+
+        var state = _quests.AcceptQuest(player.PlayerId, p.QuestId);
+        if (state == null)
+            return MakeResponse(MessageTypes.QuestUpdated, new QuestUpdatedPayload { Ok = false });
+
+        var def = _quests.GetDefinition(p.QuestId);
+        return MakeResponse(MessageTypes.QuestUpdated, new QuestUpdatedPayload
+        {
+            QuestId = p.QuestId, Name = def?.Name ?? "",
+            Description = def?.Description ?? "",
+            Progress = 0, TargetCount = def?.TargetCount ?? 0, Ok = true
+        });
+    }
+
+    // ── Phase 4: Chat ──
+
+    private string HandleChat(string cid, string json)
+    {
+        var p = Deserialize<ChatPayload>(json);
+        var player = _scenes.GetPlayerByConnection(cid);
+        if (player == null || p == null || string.IsNullOrWhiteSpace(p.Text)) return "{}";
+
+        var msg = _chat.BuildBroadcast(player.RoleName, p.Text.Trim());
+        _scenes.Broadcast(player.SceneId, "", msg);
+        return "{}";
     }
 
     // ── Helpers ──
