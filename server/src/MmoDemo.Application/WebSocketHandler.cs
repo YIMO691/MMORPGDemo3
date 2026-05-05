@@ -75,14 +75,16 @@ public class WebSocketHandler : IWebSocketHandler
     {
         try
         {
+            Console.WriteLine($"[WS] From {connectionId}: {json}");
             var env = JsonSerializer.Deserialize<Envelope>(json);
             if (env == null || string.IsNullOrEmpty(env.Type)) return "";
 
             var payloadJson = env.Payload?.GetRawText() ?? "{}";
             return await _router.HandleMessageAsync(connectionId, env.Type, payloadJson, ct);
         }
-        catch
+        catch (Exception ex)
         {
+            Console.WriteLine($"[WS] Error processing message: {ex.Message}");
             return BuildMessage(MessageTypes.AuthResult, new AuthResultPayload { Ok = false, Message = "Invalid message" });
         }
     }

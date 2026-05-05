@@ -55,7 +55,10 @@ namespace MmoDemo.Client
 
         private async void SendMove(float dirX, float dirZ, float posX, float posZ)
         {
-            var payload = $"{{\"dirX\":{dirX:F2},\"dirY\":0,\"dirZ\":{dirZ:F2},\"posX\":{posX:F2},\"posY\":0,\"posZ\":{posZ:F2}}}";
+            var payload = "{\"dirX\":" + dirX.ToString("F2") +
+                ",\"dirY\":0,\"dirZ\":" + dirZ.ToString("F2") +
+                ",\"posX\":" + posX.ToString("F2") +
+                ",\"posY\":0,\"posZ\":" + posZ.ToString("F2") + "}";
             await _ws.SendAsync("c2s.move", payload);
         }
 
@@ -83,7 +86,7 @@ namespace MmoDemo.Client
 
         private void HandleAuthResult(string payload)
         {
-            var ok = ExtractString(payload, "\"ok\":") == "true";
+            var ok = ExtractBool(payload, "\"ok\":");
             if (ok)
             {
                 Debug.Log("[Game] Auth OK, entering city...");
@@ -91,20 +94,25 @@ namespace MmoDemo.Client
             }
             else
             {
-                Debug.LogError("[Game] Auth failed: " + ExtractString(payload, "\"message\":\""));
+                Debug.LogError("[Game] Auth failed: " + ExtractString(payload, "\"message\":"));
             }
         }
 
         private void HandleEnterSceneResult(string payload)
         {
-            var ok = ExtractString(payload, "\"ok\":") == "true";
+            var ok = ExtractBool(payload, "\"ok\":");
             if (!ok) { Debug.LogError("[Game] Enter scene failed"); return; }
 
             // Spawn local player
             var spawnX = ExtractFloat(payload, "\"spawnX\":");
             var spawnZ = ExtractFloat(payload, "\"spawnZ\":");
-            _localPlayer = Instantiate(localPlayerPrefab, new Vector3(spawnX, 0, spawnZ), Quaternion.identity);
+            _localPlayer = Instantiate(localPlayerPrefab, new Vector3(spawnX, 1, spawnZ), Quaternion.identity);
+            _localPlayer.GetComponent<Renderer>().material.color = Color.blue;
             _myEntityId = ExtractString(payload, "\"entityId\":\"");
+
+            // Hide all UI canvases
+            foreach (var canvas in FindObjectsOfType<Canvas>())
+                canvas.gameObject.SetActive(false);
 
             // Spawn existing entities
             var entitiesStart = payload.IndexOf("\"entities\":[");
@@ -112,7 +120,6 @@ namespace MmoDemo.Client
             if (entitiesStart > 0)
             {
                 var entitiesJson = payload.Substring(entitiesStart + 12, entitiesEnd - entitiesStart - 11);
-                // Parse each entity from the array
                 foreach (var entityJson in SplitJsonArray(entitiesJson))
                     SpawnEntity(entityJson);
             }
@@ -170,8 +177,9 @@ namespace MmoDemo.Client
             var z = ExtractFloat(json, "\"posZ\":");
             var name = ExtractString(json, "\"name\":\"");
 
-            var go = Instantiate(otherPlayerPrefab, new Vector3(x, 0, z), Quaternion.identity);
+            var go = Instantiate(otherPlayerPrefab, new Vector3(x, 1, z), Quaternion.identity);
             go.name = name;
+            go.GetComponent<Renderer>().material.color = Color.red;
             _entities[entityId] = go;
         }
 
@@ -235,13 +243,18 @@ namespace MmoDemo.Client
             return float.TryParse(json.Substring(i, end - i), out var v) ? v : 0;
         }
 
+        private static bool ExtractBool(string json, string key) =>
+            json.IndexOf(key + "true") >= 0;
+
         private static string ExtractString(string json, string key)
         {
             var i = json.IndexOf(key);
             if (i < 0) return "";
             i += key.Length;
+            if (i < json.Length && json[i] == '"') i++; // skip opening quote
             var end = json.IndexOf('"', i);
-            if (end < 0) return json.Substring(i);
+            if (end < 0) end = json.IndexOfAny(new[] { ',', '}' }, i);
+            if (end < 0) end = json.Length;
             return json.Substring(i, end - i);
         }
 
