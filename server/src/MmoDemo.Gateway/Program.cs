@@ -37,6 +37,10 @@ builder.Services.AddSingleton<IQuestService>(questService);
 builder.Services.AddSingleton(questService);
 builder.Services.AddSingleton<IChatService, ChatService>();
 
+// ── Application services (Phase 6) ──
+var resourceRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "..", "resources"));
+builder.Services.AddSingleton<IResourceService>(new ResourceService(resourceRoot));
+
 var app = builder.Build();
 app.UseWebSockets(new WebSocketOptions { KeepAliveInterval = TimeSpan.FromSeconds(30) });
 
@@ -80,6 +84,17 @@ app.MapPost("/api/admin/reload-config", (QuestService qs, MonsterService ms) =>
     qs.Reload();
     ms.Reload();
     return Results.Ok(new { Message = "Configs reloaded from Lua" });
+});
+
+// ═══════════════ Phase 6: Resource Update ═══════════════
+
+app.MapGet("/api/resources/manifest", (IResourceService rs) =>
+    Results.Ok(new { files = rs.GetManifest() }));
+
+app.MapGet("/api/resources/{*path}", (string path, IResourceService rs) =>
+{
+    var bytes = rs.GetResource(path);
+    return bytes != null ? Results.File(bytes, "application/octet-stream") : Results.NotFound();
 });
 
 // ═══════════════ Phase 2 WebSocket ═══════════════

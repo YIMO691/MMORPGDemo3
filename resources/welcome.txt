@@ -1,0 +1,2 @@
+Welcome to MMORPG Demo v1
+Server is ready. Enjoy the game!

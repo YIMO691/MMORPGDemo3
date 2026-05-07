@@ -1,5 +1,25 @@
 # Changelog
 
+## 2026-05-07 — Phase 6: Remote Resource Update
+
+### Server
+- `GET /api/resources/manifest` — version manifest with file names, SHA256 hashes, sizes
+- `GET /api/resources/{*path}` — serve files from `resources/` directory
+- Directory traversal protection
+- `ResourceService` scans `resources/` and computes hashes
+
+### Client
+- `ResourceManager.cs` — checks manifest, downloads changed files, caches locally
+- `GameLauncher` checks for resource updates after health check, before login
+- Files cached to `Application.persistentDataPath/resources/`
+- SHA256 hash comparison to skip unchanged files
+
+### Tests — 27/27 passing (4 new)
+- Manifest returns file list with name + hash
+- Download returns file content
+- Version file accessible
+- Directory traversal blocked (404)
+
 ## 2026-05-07 — Phase 5: Lua Hotfix
 
 ### Server — MoonSharp Integration

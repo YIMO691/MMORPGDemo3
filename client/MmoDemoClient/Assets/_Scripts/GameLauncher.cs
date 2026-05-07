@@ -3,10 +3,6 @@ using UnityEngine;
 
 namespace MmoDemo.Client
 {
-    /// <summary>
-    /// Application entry point. Initializes network, UI, and Lua VM,
-    /// then opens the Login screen.
-    /// </summary>
     public class GameLauncher : MonoBehaviour
     {
         [SerializeField] private string serverBaseUrl = "http://localhost:5000";
@@ -17,6 +13,9 @@ namespace MmoDemo.Client
         private NetworkManager _network;
         private LuaManager _lua;
         private UIManager _ui;
+        private ResourceManager _resources;
+
+        public string WelcomeText { get; private set; } = "";
 
         private void Awake()
         {
@@ -25,6 +24,7 @@ namespace MmoDemo.Client
             _network = new NetworkManager(serverBaseUrl);
             _lua = new LuaManager();
             _ui = new UIManager(loginViewPrefab, roleSelectViewPrefab, cityViewPrefab, _network, this);
+            _resources = new ResourceManager(serverBaseUrl);
 
             _lua.RegisterBridge("network", _network);
             _lua.RegisterBridge("ui", _ui);
@@ -34,13 +34,37 @@ namespace MmoDemo.Client
         {
             _lua.Start();
 
+            // Phase 1: Health check
             bool healthOk = false;
             yield return _network.CheckHealth(ok => healthOk = ok);
-
-            if (healthOk)
-                _ui.ShowLogin();
-            else
+            if (!healthOk)
+            {
                 Debug.LogError("[Launcher] Cannot reach server at " + serverBaseUrl);
+                yield break;
+            }
+
+            // Phase 6: Resource update check
+            Debug.Log("[Launcher] Checking for resource updates...");
+            bool updateDone = false;
+            yield return _resources.CheckForUpdates(
+                (done, total) => Debug.Log($"[Launcher] Resource update: {done}/{total}"),
+                ok => updateDone = ok);
+
+            if (updateDone)
+            {
+                var welcome = _resources.ReadCachedText("welcome.txt");
+                if (!string.IsNullOrEmpty(welcome))
+                {
+                    WelcomeText = welcome;
+                    Debug.Log("[Launcher] Remote welcome: " + welcome.Trim());
+                }
+                else
+                {
+                    WelcomeText = "Welcome! (no remote resources)";
+                }
+            }
+
+            _ui.ShowLogin();
         }
 
         public void OnLoginSuccess()
