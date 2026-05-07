@@ -13,8 +13,13 @@ namespace MmoDemo.Client
         public void Start()
         {
             _script = new Script();
+            // MoonSharp needs UserData for CLR objects
+            UserData.RegisterAssembly();
             foreach (var kv in _bridges)
-                _script.Globals[kv.Key] = kv.Value;
+            {
+                try { _script.Globals[kv.Key] = DynValue.FromObject(_script, kv.Value); }
+                catch (Exception e) { Debug.LogWarning($"[Lua] Bridge '{kv.Key}' failed: {e.Message}"); }
+            }
             Debug.Log("[Lua] MoonSharp VM started");
         }
 
@@ -22,7 +27,10 @@ namespace MmoDemo.Client
         {
             _bridges[name] = instance;
             if (_script != null)
-                _script.Globals[name] = instance;
+            {
+                try { _script.Globals[name] = DynValue.FromObject(_script, instance); }
+                catch (Exception e) { Debug.LogWarning($"[Lua] Bridge '{name}' failed: {e.Message}"); }
+            }
             Debug.Log($"[Lua] Registered bridge: {name}");
         }
 
@@ -54,10 +62,13 @@ namespace MmoDemo.Client
 
         public void Reload()
         {
-            // Re-run Start to clear globals and re-register bridges
             _script = new Script();
+            UserData.RegisterAssembly();
             foreach (var kv in _bridges)
-                _script.Globals[kv.Key] = kv.Value;
+            {
+                try { _script.Globals[kv.Key] = DynValue.FromObject(_script, kv.Value); }
+                catch (Exception e) { Debug.LogWarning($"[Lua] Bridge '{kv.Key}' failed: {e.Message}"); }
+            }
             Debug.Log("[Lua] VM reloaded (hotfix applied)");
         }
 
