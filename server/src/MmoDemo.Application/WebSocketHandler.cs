@@ -9,11 +9,13 @@ public class WebSocketHandler : IWebSocketHandler
 {
     private readonly IMessageRouter _router;
     private readonly ISceneManager _sceneManager;
+    private readonly MonsterService _monsters;
 
-    public WebSocketHandler(IMessageRouter router, ISceneManager sceneManager)
+    public WebSocketHandler(IMessageRouter router, ISceneManager sceneManager, MonsterService monsters)
     {
         _router = router;
         _sceneManager = sceneManager;
+        _monsters = monsters;
     }
 
     public async Task HandleConnectionAsync(WebSocket socket, string connectionId, CancellationToken ct)
@@ -26,7 +28,11 @@ public class WebSocketHandler : IWebSocketHandler
         {
             while (socket.State == WebSocketState.Open && !ct.IsCancellationRequested)
             {
-                var result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), ct);
+                using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                using var linked = CancellationTokenSource.CreateLinkedTokenSource(ct, timeoutCts.Token);
+                WebSocketReceiveResult result;
+                try { result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), linked.Token); }
+                catch (OperationCanceledException) { _monsters.TickRespawn(_sceneManager); continue; }
 
                 if (result.MessageType == WebSocketMessageType.Close)
                 {

@@ -124,14 +124,24 @@ namespace MmoDemo.Client
             var sz = ExtractFloat(p, "\"spawnZ\":");
             _localPlayer = Instantiate(localPlayerPrefab, new Vector3(sx, 1, sz), Quaternion.identity);
             _localPlayer.GetComponent<Renderer>().material.color = Color.blue;
+
+            // Camera follow player
+            var cam = Camera.main;
+            if (cam != null)
+            {
+                var follow = cam.GetComponent<CameraFollow>();
+                if (follow == null) follow = cam.gameObject.AddComponent<CameraFollow>();
+                follow.target = _localPlayer.transform;
+            }
+
             _myEntityId = ExtractString(p, "\"entityId\":\"");
 
-            // Hide center HUD text but keep canvas active for chat/quest overlays
+            // Only hide StatusText, keep NameText/LevelText/GoldText visible
             foreach (var canvas in FindObjectsOfType<Canvas>())
             {
                 foreach (Transform child in canvas.transform)
                 {
-                    if (child.name is "NameText" or "LevelText" or "GoldText" or "StatusText")
+                    if (child.name is "StatusText")
                         child.gameObject.SetActive(false);
                 }
             }
@@ -341,6 +351,22 @@ namespace MmoDemo.Client
                     IsReady = false;
                     SendEnterScene("city_001");
                 }
+            }
+
+            // Phase 3: Auto-pickup nearby drops (within 2 units)
+            var playerPos = _localPlayer.transform.position;
+            string nearbyDrop = null;
+            foreach (var kv in _drops)
+            {
+                if (kv.Value == null) continue;
+                if (Vector3.Distance(playerPos, kv.Value.transform.position) < 2f)
+                { nearbyDrop = kv.Key; break; }
+            }
+            if (nearbyDrop != null)
+            {
+                _ws.SendAsync("c2s.pickup_item", $"{{\"dropId\":\"{nearbyDrop}\"}}");
+                Destroy(_drops[nearbyDrop]);
+                _drops.Remove(nearbyDrop);
             }
 
             // Auto-target: highlight nearest monster

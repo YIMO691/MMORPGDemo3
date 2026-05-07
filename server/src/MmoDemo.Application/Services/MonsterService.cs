@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using MoonSharp.Interpreter;
 using MmoDemo.Domain;
 
@@ -12,6 +13,7 @@ public class MonsterService
     private int _monsterCounter;
     private Dictionary<string, MonsterTemplate> _templates = new();
     private readonly string _configPath;
+    private readonly ConcurrentDictionary<string, (Monster monster, DateTime respawnAt)> _deadMonsters = new();
 
     public static Dictionary<string, MonsterTemplate> Templates { get; private set; } = new();
 
@@ -66,6 +68,29 @@ public class MonsterService
     }
 
     public void Reload() => LoadFromLua();
+
+    public void MarkDead(Monster monster)
+    {
+        _deadMonsters[monster.EntityId] = (monster, DateTime.UtcNow.AddSeconds(monster.RespawnSeconds));
+    }
+
+    public void TickRespawn(ISceneManager scenes)
+    {
+        var now = DateTime.UtcNow;
+        foreach (var kv in _deadMonsters)
+        {
+            if (now >= kv.Value.respawnAt)
+            {
+                var m = kv.Value.monster;
+                m.Hp = m.MaxHp;
+                m.AiState = MonsterAiState.Patrol;
+                m.PosX = m.PatrolCenterX;
+                m.PosZ = m.PatrolCenterZ;
+                scenes.AddEntity(m.SceneId, m);
+                _deadMonsters.TryRemove(kv.Key, out _);
+            }
+        }
+    }
 
     public Monster SpawnMonster(string sceneId, string templateId, float x, float z)
     {

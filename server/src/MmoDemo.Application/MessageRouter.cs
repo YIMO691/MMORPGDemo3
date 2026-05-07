@@ -172,7 +172,8 @@ public class MessageRouter : IMessageRouter
             });
             _scenes.Broadcast(player.SceneId, "", deathMsg);
 
-            // Remove monster from scene
+            // Remove monster from scene and schedule respawn
+            _monsters.MarkDead(monster);
             _scenes.RemoveEntityFromScene(player.SceneId, target.EntityId);
 
             // Phase 4: Quest progress
@@ -231,10 +232,17 @@ public class MessageRouter : IMessageRouter
         var player = _scenes.GetPlayerByConnection(cid);
         if (player == null || p == null) return "{}";
 
-        // In a full implementation we'd validate the drop exists and is in range
-        // For now, just add to inventory
-        // dropId format: "drop_<guid>" — we don't track individual drops yet,
-        // so let's use the templateId from the dropId (would come from client)
+        // Add item to inventory (templateId passed in dropId as "drop_N")
+        var tidStr = p.DropId.Replace("drop_", "");
+        if (int.TryParse(tidStr, out var templateId))
+        {
+            var tpl = _drops.GetTemplate(templateId);
+            if (tpl != null)
+            {
+                _inventory.AddDrop(player.PlayerId, [templateId]);
+                player.Gold += Math.Max(1, templateId);
+            }
+        }
 
         var dropMsg = MakeResponse(MessageTypes.DropPickedUp, new DropPickedUpPayload
         {
