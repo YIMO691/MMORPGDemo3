@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-05-07 — GitHub Repository Standards
+
+- Copied the `github-repo-standards` skill and reusable GitHub templates from `F:\Unity6_AI`.
+- Added repository community files: `README.md`, `SECURITY.md`, `CONTRIBUTING.md`, `.editorconfig`, `.gitattributes`, CODEOWNERS, PR template, issue template, and docs index.
+- Updated root `.gitignore` to ignore accidental Unity-generated root folders.
+- Documented GitHub remote and branch workflow in `docs/workflows/github-setup.md`.
+- Rewrote the copied `github-repo-standards` skill for the AI_MMORPG Unity + .NET repository.
+- Cleaned accidental Unity-generated root folders after confirming they were ignored and untracked.
+- Skipped CI workflow creation because project rules require explicit approval before changing CI/CD shape.
+
 ## 2026-05-07 — Unity UI Overlay Fix
 
 - Fixed CityView chat and quest overlays to reuse an existing panel instead of creating duplicate runtime copies.

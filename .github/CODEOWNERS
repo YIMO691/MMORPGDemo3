@@ -1,0 +1,18 @@
+# Default owner
+* @YIMO691
+
+# Documentation
+docs/ @YIMO691
+*.md @YIMO691
+
+# Server
+server/ @YIMO691
+
+# Unity client
+client/MmoDemoClient/ @YIMO691
+
+# Protocol drafts
+proto/ @YIMO691
+
+# GitHub repository settings and templates
+.github/ @YIMO691

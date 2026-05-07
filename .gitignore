@@ -13,14 +13,21 @@ __pycache__/
 [Bb]in/
 [Oo]bj/
 
-# Claude internal
-.claude/
+# Claude local/private files
+.claude/settings.local.json
+.claude/worktrees/
 
 # Unity generated files (root)
+/Assets/
 /Library/
+/Logs/
+/Temp/
+/Obj/
 /Packages/
 /ProjectSettings/
 /UserSettings/
+/Build/
+/Builds/
 client/MmoDemoClient/Library/
 client/MmoDemoClient/Temp/
 client/MmoDemoClient/Obj/
