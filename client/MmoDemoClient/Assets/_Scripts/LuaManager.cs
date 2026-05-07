@@ -71,7 +71,7 @@ namespace MmoDemo.Client
             {
                 var type = instance.GetType();
                 if (_registeredBridgeTypes.Add(type))
-                    UserData.RegisterType(type);
+                    UserData.RegisterType(type, InteropAccessMode.Reflection);
 
                 _script.Globals[name] = UserData.Create(instance);
             }
