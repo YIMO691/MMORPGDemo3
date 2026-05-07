@@ -13,6 +13,9 @@ namespace MmoDemo.Client
         {
             _statusText = statusText;
             _btn1 = quest1; _btn2 = quest2; _btn3 = quest3;
+            _btn1?.onClick.RemoveAllListeners();
+            _btn2?.onClick.RemoveAllListeners();
+            _btn3?.onClick.RemoveAllListeners();
             _btn1?.onClick.AddListener(() => AcceptQuest(1));
             _btn2?.onClick.AddListener(() => AcceptQuest(2));
             _btn3?.onClick.AddListener(() => AcceptQuest(3));

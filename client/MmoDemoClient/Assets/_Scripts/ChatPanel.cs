@@ -18,7 +18,11 @@ namespace MmoDemo.Client
             _chatLog = chatLog;
             _inputField = inputField;
             _sendButton = sendButton;
-            _sendButton.onClick.AddListener(Send);
+            if (_sendButton != null)
+            {
+                _sendButton.onClick.RemoveListener(Send);
+                _sendButton.onClick.AddListener(Send);
+            }
         }
 
         private void Start()

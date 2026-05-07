@@ -16,7 +16,11 @@ __pycache__/
 # Claude internal
 .claude/
 
-# Unity generated files
+# Unity generated files (root)
+/Library/
+/Packages/
+/ProjectSettings/
+/UserSettings/
 client/MmoDemoClient/Library/
 client/MmoDemoClient/Temp/
 client/MmoDemoClient/Obj/

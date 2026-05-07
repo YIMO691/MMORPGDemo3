@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-05-07 — Unity UI Overlay Fix
+
+- Fixed CityView chat and quest overlays to reuse an existing panel instead of creating duplicate runtime copies.
+- Raised CityView canvas sorting order so chat and quest UI stay visible after entering the 3D scene.
+- Anchored chat controls to the bottom-left and quest controls to the top-right of the CityView canvas.
+- Guarded chat and quest button wiring against duplicate listener registration.
+
 ## 2026-05-05 — Phase 4: Quest + Chat
 
 ### Server — Quest System
