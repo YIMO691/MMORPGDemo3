@@ -1,91 +1,152 @@
 # AI MMORPG Demo
 
-Unity + C# + Lua + .NET 9.0 MMORPG vertical-slice demo for a resume portfolio.
+[![.NET](https://img.shields.io/badge/.NET-9.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com)
+[![Unity](https://img.shields.io/badge/Unity-2022.3-FFFFFF?logo=unity)](https://unity.com)
+[![Tests](https://img.shields.io/badge/tests-32%2F32-brightgreen)](.)
+[![Phase](https://img.shields.io/badge/phase-1--9%20complete-blue)](.)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-## Features
+Unity + C# + Lua + .NET 9.0 server-authoritative MMORPG vertical slice. Resume portfolio project demonstrating full-stack game development.
 
-| Phase | Feature | Status |
-|-------|---------|--------|
-| 1 | Guest login, role create/select, city entry | Done |
-| 2 | WebSocket real-time connection, movement sync, entity snapshots | Done |
-| 3 | Combat (3 skills), monster AI, drops, inventory (use/equip) | Done |
-| 4 | Kill quests (3 quests), scene chat broadcast | Done |
-| 5 | Lua hotfix (MoonSharp), config-driven quests & monsters | Done |
-| 6 | Remote resource update (manifest, download, cache) | Done |
-| 7 | World map (2 scenes: city + wilderness, portal travel) | Done |
+## Game Features
 
-All game state is in-memory (no database dependency). Server-authoritative for combat, loot, inventory, quests. Client sends intent only.
+| Phase | Feature | Description |
+|:-----:|---------|-------------|
+| 1 | Login & Roles | Guest login, role creation (3 classes), role selection |
+| 2 | Real-time Sync | WebSocket connection, WASD movement, entity snapshots |
+| 3 | Combat | 3 skills (Slash/Power Strike/Fireball), monster AI, drops, inventory |
+| 4 | Quest & Chat | 3 kill quests with rewards, scene-wide chat broadcast |
+| 5 | Lua Hotfix | MoonSharp-powered config reloading, live quest/monster tuning |
+| 6 | Resource Update | Remote file manifest + download + SHA256 cache validation |
+| 7 | World Map | 2 scenes (City + Wilderness), portal travel, camera follow |
+| 8 | Docker Deploy | PostgreSQL persistence, Redis sessions, Docker Compose |
+| 9 | Android | Touch joystick + skill buttons, APK build pipeline |
 
 ## Quick Start
+
+### Prerequisites
+
+- [.NET SDK 9.0](https://dotnet.microsoft.com/download/dotnet/9.0)
+- [Unity 2022.3 LTS](https://unity.com/releases/editor/archive) (Android Build Support optional)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (optional, for Phase 8)
 
 ### Server
 
 ```powershell
+# Clone & run
+git clone https://github.com/YIMO691/MMORPGDemo3.git
+cd MMORPGDemo3
 dotnet run --project server/src/MmoDemo.Gateway/MmoDemo.Gateway.csproj
-# http://localhost:5000  |  ws://localhost:5000/ws
 ```
+
+Server listens on `http://localhost:5000` and `ws://localhost:5000/ws`.
 
 ### Client
 
-Open `client/MmoDemoClient/` in Unity Hub (2022.3 LTS recommended). Open the Bootstrap scene and press Play.
+Open `client/MmoDemoClient/` in Unity Hub. Open `Assets/_Scenes/Bootstrap.unity`, press Play.
+
+### Docker (Phase 8)
+
+```powershell
+docker compose -f deploy/docker-compose.yml up --build
+```
+
+Sets `USE_POSTGRES=true` automatically — player data persists across restarts.
 
 ### Tests
 
 ```powershell
 dotnet test server/MmoDemo.sln
-# 30 tests: HTTP API + WebSocket + combat + quest + chat + Lua + resource + scene
+# 32 tests: HTTP API · WebSocket auth · Combat flow · Quest progress
+#           Chat broadcast · Lua config · Resource download · Scene switch
 ```
 
 ## Architecture
 
 ```
-Client                          Server
-──────                          ──────
-Unity C# (UI, rendering)  ←→   ASP.NET Core minimal API
-  GameLauncher                    ├─ /health, /api/auth/*, /api/roles/* (HTTP)
-  UIManager                       ├─ /api/resources/* (resource update)
-  GameManager                     ├─ /api/admin/reload-config (Lua hotfix)
-  WebSocketClient                 └─ /ws (WebSocket)
-  ChatPanel / QuestTracker          ├─ MessageRouter (dispatch by type)
-  ResourceManager                   ├─ Services (Auth, Combat, Quest, Chat…)
-  LuaManager (MoonSharp)            ├─ SceneManager (entities, connections)
-  CameraFollow                      └─ In-memory stores (no DB)
+┌─ Unity Client ─────────────────────┐    ┌─ .NET Server ─────────────────────┐
+│  GameLauncher → UIManager           │    │  ASP.NET Core Minimal API          │
+│  GameManager → WebSocketClient      │←──→│  ├─ /health, /api/auth/* (HTTP)    │
+│  ChatPanel · QuestTracker           │ WS │  ├─ /api/resources/*              │
+│  ResourceManager · LuaManager       │    │  ├─ /api/admin/reload-config      │
+│  MobileInput · CameraFollow         │    │  └─ /ws (WebSocket)               │
+└─────────────────────────────────────┘    │  MessageRouter → Services          │
+                                           │  SceneManager → In-memory stores   │
+                                           │  AppDbContext → PostgreSQL (opt)    │
+                                           └────────────────────────────────────┘
 ```
 
 - Client sends **intent** (`c2s.*`), server is **authoritative**
-- WebSocket envelope: `{"t": "<type>", "ts": <unix_ms>, "p": <payload>}`
-- C# handles high-frequency systems, Lua handles hotfix configs & UI flow
-- Scenes: `city_001` (Main City) + `field_001` (Wilderness), portal travel
+- Envelope: `{"t": "<type>", "ts": <unix_ms>, "p": <payload>}`
+- C# handles high-frequency systems · Lua handles hotfix configs & UI flow
 
-## Project Layout
+## Project Structure
 
 ```
-client/MmoDemoClient/    Unity project
-server/                  .NET 9.0 solution
-  src/
-    MmoDemo.Gateway/     Minimal API entry point
-    MmoDemo.Application/ Business logic (Interfaces/ + Services/ + routing)
-    MmoDemo.Contracts/   HTTP models + WebSocket message types/payloads
-    MmoDemo.Domain/      Entity, PlayerEntity, Monster, Item, Quest, Role, Scene
-    MmoDemo.Infrastructure/  In-memory stores
-  tests/
-proto/                   Protocol design drafts
-docs/                    Architecture, phases, design notes, changelog
-configs/                 Lua config tables (quests.lua, monsters.lua)
-resources/               Remote-updateable resource files
+├── client/MmoDemoClient/   Unity project
+│   └── Assets/
+│       ├── _Scripts/        C# game code (14 scripts)
+│       ├── _Scenes/         Bootstrap.unity
+│       ├── Resources/       Prefabs + Lua scripts
+│       └── Plugins/         MoonSharp.Interpreter.dll
+├── server/                  .NET 9.0 solution
+│   ├── src/
+│   │   ├── MmoDemo.Gateway/       Entry point + endpoints
+│   │   ├── MmoDemo.Application/   Interfaces/ + Services/ + routing
+│   │   ├── MmoDemo.Contracts/     HTTP models + WS payloads
+│   │   ├── MmoDemo.Domain/        Entity models
+│   │   └── MmoDemo.Infrastructure/ Stores (memory + PostgreSQL)
+│   └── tests/                     32 integration tests
+├── proto/                   Protocol design drafts
+├── configs/                 Lua configs (quests.lua, monsters.lua)
+├── resources/               Remote-updateable files
+├── deploy/                  Dockerfile + docker-compose.yml
+└── docs/                    Architecture, phases, changelog, build guides
 ```
+
+## API Reference
+
+### HTTP Endpoints
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| GET | `/health` | Health check |
+| POST | `/api/auth/guest-login` | Guest login → playerId + token |
+| POST | `/api/roles/list` | List roles for player |
+| POST | `/api/roles/create` | Create role (name 1-12 chars, classId 1-3) |
+| POST | `/api/roles/select` | Select active role |
+| POST | `/api/scene/enter-city` | Enter city scene |
+| GET | `/api/resources/manifest` | Resource file manifest |
+| GET | `/api/resources/{path}` | Download resource file |
+| POST | `/api/admin/reload-config` | Hot-reload Lua configs |
+
+### WebSocket Messages
+
+| Type | Direction | Purpose |
+|------|-----------|---------|
+| `c2s.auth` / `s2c.auth_result` | ⇄ | Authenticate |
+| `c2s.enter_scene` / `s2c.enter_scene_result` | ⇄ | Enter/switch scene |
+| `c2s.move` / `s2c.entity_snapshot` | ⇄ | Movement sync |
+| `c2s.cast_skill` / `s2c.combat_event` | ⇄ | Combat |
+| `c2s.pickup_item` / `s2c.drop_spawned` | ⇄ | Item drops |
+| `c2s.accept_quest` / `s2c.quest_updated` | ⇄ | Quest progress |
+| `c2s.chat` / `s2c.chat_broadcast` | ⇄ | Chat messages |
 
 ## Documentation
 
-- [Roadmap](docs/10_Roadmap.md)
-- [Changelog](docs/11_Changelog.md)
-- [Architecture](docs/architecture/)
-- [Phase plans](docs/phases/)
-- [Design docs](docs/design/)
+| Document | Description |
+|----------|-------------|
+| [Roadmap](docs/10_Roadmap.md) | Phase plan & progress |
+| [Changelog](docs/11_Changelog.md) | Full change history |
+| [Architecture](docs/architecture/) | Design decisions & constraints |
+| [Phase Plans](docs/phases/) | Detailed spec per phase |
+| [Design Docs](docs/design/) | UI & flow designs |
+| [Android Build](docs/build-android.md) | Mobile build guide |
 
 ## Constraints
 
-- No frameworks without approval. No new tech stack.
-- Never commit secrets. `.env`, `*.local.json` are gitignored.
-- Do not commit build outputs: `bin/`, `obj/`, `Library/`, `Temp/`, `Build/`, `Builds/`, `Logs/`
-- Update `docs/11_Changelog.md` for completed work.
+- Server-authoritative: client sends intent, never final result
+- No new frameworks without approval
+- Never commit secrets (`.env`, `*.local.json` are gitignored)
+- Never commit build outputs (`bin/`, `obj/`, `Library/`, `Build/`, `Builds/`)
+- Update [changelog](docs/11_Changelog.md) for all completed work
