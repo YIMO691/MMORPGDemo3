@@ -1,18 +1,60 @@
 using System.Collections.Concurrent;
+using MoonSharp.Interpreter;
 using MmoDemo.Domain;
 
 namespace MmoDemo.Application;
 
 public class QuestService : IQuestService
 {
-    private static readonly Dictionary<int, QuestDefinition> _definitions = new()
-    {
-        [1] = new QuestDefinition { QuestId = 1, Name = "Slime Extermination", Description = "Kill 3 Slimes", TargetMonsterType = "slime", TargetCount = 3, ExpReward = 30, GoldReward = 20 },
-        [2] = new QuestDefinition { QuestId = 2, Name = "Goblin Threat", Description = "Kill 2 Goblins", TargetMonsterType = "goblin", TargetCount = 2, ExpReward = 50, GoldReward = 35 },
-        [3] = new QuestDefinition { QuestId = 3, Name = "Wolf Hunt", Description = "Kill 1 Wolf", TargetMonsterType = "wolf", TargetCount = 1, ExpReward = 40, GoldReward = 25 },
-    };
-
+    private Dictionary<int, QuestDefinition> _definitions = new();
     private readonly ConcurrentDictionary<string, PlayerQuestState> _active = new();
+    private readonly string _configPath;
+
+    public QuestService(string configPath = "configs/quests.lua")
+    {
+        _configPath = configPath;
+        LoadFromLua();
+    }
+
+    public void LoadFromLua()
+    {
+        try
+        {
+            var script = new Script();
+            var result = script.DoFile(_configPath);
+            var table = result.Table;
+            var defs = new Dictionary<int, QuestDefinition>();
+
+            foreach (var pair in table.Pairs)
+            {
+                var id = (int)pair.Key.CastToNumber();
+                var v = pair.Value.Table;
+                defs[id] = new QuestDefinition
+                {
+                    QuestId = id,
+                    Name = v.Get("name").CastToString(),
+                    Description = v.Get("description").CastToString(),
+                    TargetMonsterType = v.Get("target").CastToString(),
+                    TargetCount = (int)v.Get("count").CastToNumber(),
+                    ExpReward = (int)v.Get("exp").CastToNumber(),
+                    GoldReward = (int)v.Get("gold").CastToNumber(),
+                };
+            }
+            _definitions = defs;
+        }
+        catch
+        {
+            // Fallback to defaults if Lua file is missing
+            _definitions = new()
+            {
+                [1] = new QuestDefinition { QuestId = 1, Name = "Slime Extermination", Description = "Kill 3 Slimes", TargetMonsterType = "slime", TargetCount = 3, ExpReward = 30, GoldReward = 20 },
+                [2] = new QuestDefinition { QuestId = 2, Name = "Goblin Threat", Description = "Kill 2 Goblins", TargetMonsterType = "goblin", TargetCount = 2, ExpReward = 50, GoldReward = 35 },
+                [3] = new QuestDefinition { QuestId = 3, Name = "Wolf Hunt", Description = "Kill 1 Wolf", TargetMonsterType = "wolf", TargetCount = 1, ExpReward = 40, GoldReward = 25 },
+            };
+        }
+    }
+
+    public void Reload() => LoadFromLua();
 
     public QuestDefinition? GetDefinition(int questId) =>
         _definitions.TryGetValue(questId, out var d) ? d : null;

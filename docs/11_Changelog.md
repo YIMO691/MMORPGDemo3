@@ -1,5 +1,33 @@
 # Changelog
 
+## 2026-05-07 — Phase 5: Lua Hotfix
+
+### Server — MoonSharp Integration
+- Installed MoonSharp 2.0 (pure C# Lua 5.2 interpreter) via NuGet
+- Quest definitions moved from hardcoded C# to `configs/quests.lua`
+- Monster templates moved from hardcoded C# to `configs/monsters.lua`
+- `POST /api/admin/reload-config` — reload Lua configs at runtime
+- QuestService + MonsterService load from Lua with C# fallback
+
+### Client — LuaManager Rewrite
+- Replaced placeholder LuaManager with full MoonSharp VM
+- `DoString`, `DoFile`, `Call` methods for Lua execution
+- `Reload()` method for hotfix demonstration
+- Lua scripts simplified to flow-control modules (login_flow, role_select_flow, city_flow)
+- MoonSharp DLL copied to `Assets/Plugins/`
+
+### Tests — 23/23 passing (5 new)
+- Lua config loads quests with correct values
+- Lua config loads monsters with correct values
+- Lua string execution works
+- Admin reload endpoint returns OK
+- Quest reward matches Lua config
+
+### Hotfix Demo Flow
+1. Modify `configs/quests.lua` (change exp/gold rewards)
+2. `POST /api/admin/reload-config`
+3. New values take effect immediately — no recompilation
+
 ## 2026-05-07 — GitHub Repository Standards
 
 - Copied the `github-repo-standards` skill and reusable GitHub templates from `F:\Unity6_AI`.

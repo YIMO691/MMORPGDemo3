@@ -1,44 +1,71 @@
 using System;
 using System.Collections.Generic;
+using MoonSharp.Interpreter;
 using UnityEngine;
 
 namespace MmoDemo.Client
 {
-    /// <summary>
-    /// Minimal Lua VM wrapper for Phase 1.
-    /// Registers C# bridge objects so Lua scripts can call into native code.
-    /// The actual xLua integration happens when the Unity project is created.
-    /// </summary>
     public class LuaManager : IDisposable
     {
+        private Script _script;
         private readonly Dictionary<string, object> _bridges = new();
+
+        public void Start()
+        {
+            _script = new Script();
+            foreach (var kv in _bridges)
+                _script.Globals[kv.Key] = kv.Value;
+            Debug.Log("[Lua] MoonSharp VM started");
+        }
 
         public void RegisterBridge(string name, object instance)
         {
             _bridges[name] = instance;
+            if (_script != null)
+                _script.Globals[name] = instance;
             Debug.Log($"[Lua] Registered bridge: {name}");
         }
 
-        public void Start()
+        public DynValue DoString(string script)
         {
-            Debug.Log("[Lua] VM started (placeholder — xLua not yet integrated)");
-
-            // In real xLua setup:
-            //   var env = new LuaTable();
-            //   foreach (var kv in _bridges)
-            //       env.Set(kv.Key, kv.Value);
+            if (_script == null) return DynValue.Nil;
+            try { return _script.DoString(script); }
+            catch (Exception e) { Debug.LogError($"[Lua] Error: {e.Message}"); return DynValue.Nil; }
         }
 
-        public void DoString(string script)
+        public DynValue DoFile(string path)
         {
-            Debug.Log($"[Lua] Execute: {script[..Math.Min(script.Length, 80)]}");
-            // In real xLua: LuaEnv.DoString(script);
+            if (_script == null) return DynValue.Nil;
+            try { return _script.DoFile(path); }
+            catch (Exception e) { Debug.LogError($"[Lua] Error: {e.Message}"); return DynValue.Nil; }
+        }
+
+        public object Call(string funcName, params object[] args)
+        {
+            if (_script == null) return null;
+            try
+            {
+                var fn = _script.Globals.Get(funcName);
+                if (fn.IsNil()) return null;
+                return _script.Call(fn, args);
+            }
+            catch (Exception e) { Debug.LogError($"[Lua] Call '{funcName}' error: {e.Message}"); return null; }
+        }
+
+        public void Reload()
+        {
+            // Re-run Start to clear globals and re-register bridges
+            _script = new Script();
+            foreach (var kv in _bridges)
+                _script.Globals[kv.Key] = kv.Value;
+            Debug.Log("[Lua] VM reloaded (hotfix applied)");
         }
 
         public void Dispose()
         {
             Debug.Log("[Lua] VM disposed");
             _bridges.Clear();
+            _script = null;
         }
     }
 }

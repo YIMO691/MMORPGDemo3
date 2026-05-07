@@ -21,14 +21,20 @@ builder.Services.AddSingleton<ISceneManager, SceneManager>();
 builder.Services.AddSingleton<IMessageRouter, MessageRouter>();
 builder.Services.AddSingleton<IWebSocketHandler, WebSocketHandler>();
 
+// ── Lua config root ──
+var configRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "..", "configs"));
+
 // ── Application services (Phase 3) ──
 builder.Services.AddSingleton<ICombatService, CombatService>();
-builder.Services.AddSingleton<MonsterService>();
+builder.Services.AddSingleton<MonsterService>(sp =>
+    new MonsterService(sp.GetRequiredService<ISceneManager>(), Path.Combine(configRoot, "monsters.lua")));
 builder.Services.AddSingleton<DropService>();
 builder.Services.AddSingleton<InventoryService>();
 
 // ── Application services (Phase 4) ──
-builder.Services.AddSingleton<IQuestService, QuestService>();
+var questService = new QuestService(Path.Combine(configRoot, "quests.lua"));
+builder.Services.AddSingleton<IQuestService>(questService);
+builder.Services.AddSingleton(questService);
 builder.Services.AddSingleton<IChatService, ChatService>();
 
 var app = builder.Build();
@@ -66,6 +72,15 @@ app.MapPost("/api/roles/select", (SelectRoleRequest r, IRoleService s) =>
 
 app.MapPost("/api/scene/enter-city", (EnterCityRequest r, ISceneService s) =>
     s.EnterCity(r) is { Code: ErrorCodes.Ok } res ? Results.Ok(res) : Results.BadRequest(s.EnterCity(r)));
+
+// ═══════════════ Phase 5: Config Reload ═══════════════
+
+app.MapPost("/api/admin/reload-config", (QuestService qs, MonsterService ms) =>
+{
+    qs.Reload();
+    ms.Reload();
+    return Results.Ok(new { Message = "Configs reloaded from Lua" });
+});
 
 // ═══════════════ Phase 2 WebSocket ═══════════════
 
