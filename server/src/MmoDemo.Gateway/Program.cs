@@ -55,6 +55,16 @@ sceneManager.AddScene(new Scene
     BoundsMinZ = -50, BoundsMaxZ = 50
 });
 
+// Phase 7: Wilderness map
+sceneManager.AddScene(new Scene
+{
+    SceneId = "field_001",
+    SceneName = "Wilderness",
+    SpawnX = -30, SpawnY = 0, SpawnZ = -30,
+    BoundsMinX = -80, BoundsMaxX = 20,
+    BoundsMinZ = -80, BoundsMaxZ = 20
+});
+
 // ═══════════════ Phase 1 HTTP Endpoints ═══════════════
 
 app.MapGet("/health", () => Results.Ok(new

@@ -17,11 +17,12 @@ namespace MmoDemo.Client
         [SerializeField] private GameObject damageTextPrefab;
 
         private WebSocketClient _ws;
-        private string _playerId, _token, _roleId, _myEntityId;
+        private string _playerId, _token, _roleId, _myEntityId, _currentSceneId;
         private readonly Dictionary<string, GameObject> _entities = new();
         private readonly Dictionary<string, GameObject> _drops = new();
         private GameObject _localPlayer;
         private int _score;
+        private float _portalCooldown;
 
         public bool IsReady { get; private set; }
 
@@ -108,6 +109,17 @@ namespace MmoDemo.Client
         private void HandleEnterScene(string p)
         {
             if (!ExtractBool(p, "\"ok\":")) return;
+
+            // Phase 7: Despawn old entities on scene switch
+            foreach (var kv in _entities)
+                Destroy(kv.Value);
+            _entities.Clear();
+            foreach (var kv in _drops)
+                Destroy(kv.Value);
+            _drops.Clear();
+            if (_localPlayer != null) Destroy(_localPlayer);
+
+            _currentSceneId = ExtractString(p, "\"sceneId\":\"");
             var sx = ExtractFloat(p, "\"spawnX\":");
             var sz = ExtractFloat(p, "\"spawnZ\":");
             _localPlayer = Instantiate(localPlayerPrefab, new Vector3(sx, 1, sz), Quaternion.identity);
@@ -129,8 +141,9 @@ namespace MmoDemo.Client
             foreach (var ej in arr)
                 SpawnEntity(ej);
 
+            _portalCooldown = 3f;
             IsReady = true;
-            Debug.Log("[Game] Scene entered. Score: 0");
+            Debug.Log($"[Game] Entered scene: {_currentSceneId}");
         }
 
         // ═══════════ Entity Spawning ═══════════
@@ -309,6 +322,25 @@ namespace MmoDemo.Client
             {
                 if (Input.GetKeyDown(KeyCode.Alpha0 + skill))
                     AttackNearest(skill);
+            }
+
+            // Phase 7: Portal / scene transition
+            if (_portalCooldown > 0) _portalCooldown -= Time.deltaTime;
+            if (_portalCooldown <= 0)
+            {
+                var pos = _localPlayer.transform.position;
+                if (_currentSceneId == "city_001" && (pos.x > 40 || pos.x < -40 || pos.z > 40 || pos.z < -40))
+                {
+                    Debug.Log("[Game] Portal → Wilderness");
+                    IsReady = false;
+                    SendEnterScene("field_001");
+                }
+                else if (_currentSceneId == "field_001" && (pos.x > 15 || pos.x < -75 || pos.z > 15 || pos.z < -75))
+                {
+                    Debug.Log("[Game] Portal → Main City");
+                    IsReady = false;
+                    SendEnterScene("city_001");
+                }
             }
 
             // Auto-target: highlight nearest monster

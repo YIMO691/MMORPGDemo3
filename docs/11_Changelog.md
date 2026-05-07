@@ -1,5 +1,23 @@
 # Changelog
 
+## 2026-05-07 — Phase 7: World Map / Multiple Scenes
+
+### Server
+- Added `field_001` (Wilderness) scene with different spawn point and monsters
+- Scene switching: leave old scene (broadcast entity_left), enter new scene
+- Different monster spawns per scene (slime/goblin/wolf in city, wolf/goblin in field)
+
+### Client
+- Despawn all entities on scene switch, re-spawn from new scene data
+- Portal trigger: walk to city boundary → auto-teleport to field; field boundary → back to city
+- 3-second cooldown to prevent rapid switching
+- Chat and quest UI persist across scene transitions
+
+### Tests — 30/30 passing (3 new)
+- Enter field scene directly
+- Switch city → field → city
+- Invalid scene returns error
+
 ## 2026-05-07 — Phase 6: Remote Resource Update
 
 ### Server

@@ -81,14 +81,33 @@ public class MessageRouter : IMessageRouter
         if (player == null || p == null)
             return MakeResponse(MessageTypes.EnterSceneResult, new EnterSceneResultPayload { Ok = false });
 
+        // If already in a different scene, leave old scene first
+        if (!string.IsNullOrEmpty(player.SceneId) && player.SceneId != p.SceneId)
+        {
+            var leaveMsg = MakeResponse(MessageTypes.EntityLeft,
+                new EntityLeftPayload { EntityId = player.EntityId });
+            _scenes.Broadcast(player.SceneId, cid, leaveMsg);
+            _scenes.LeaveScene(player.SceneId, player.EntityId);
+        }
+
         var entered = _scenes.EnterScene(p.SceneId, player);
         if (entered == null)
             return MakeResponse(MessageTypes.EnterSceneResult, new EnterSceneResultPayload { Ok = false });
 
-        // Spawn initial monsters
-        _monsters.SpawnMonster(p.SceneId, "slime", 5, 3);
-        _monsters.SpawnMonster(p.SceneId, "goblin", -4, -2);
-        _monsters.SpawnMonster(p.SceneId, "wolf", 3, -4);
+        // Phase 7: Spawn different monsters per scene
+        if (p.SceneId == "field_001")
+        {
+            _monsters.SpawnMonster(p.SceneId, "wolf", -25, -35);
+            _monsters.SpawnMonster(p.SceneId, "wolf", -35, -25);
+            _monsters.SpawnMonster(p.SceneId, "goblin", -28, -28);
+            _monsters.SpawnMonster(p.SceneId, "goblin", -32, -32);
+        }
+        else
+        {
+            _monsters.SpawnMonster(p.SceneId, "slime", 5, 3);
+            _monsters.SpawnMonster(p.SceneId, "goblin", -4, -2);
+            _monsters.SpawnMonster(p.SceneId, "wolf", 3, -4);
+        }
 
         var entities = _scenes.GetEntities(p.SceneId).Select(ToSnapshot).ToList();
         var joinMsg = MakeResponse(MessageTypes.EntityJoined,
