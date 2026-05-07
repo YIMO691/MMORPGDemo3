@@ -13,8 +13,6 @@ namespace MmoDemo.Client
         public void Start()
         {
             _script = new Script();
-            // MoonSharp needs UserData for CLR objects
-            UserData.RegisterAssembly();
             foreach (var kv in _bridges)
             {
                 try { _script.Globals[kv.Key] = DynValue.FromObject(_script, kv.Value); }
@@ -63,7 +61,6 @@ namespace MmoDemo.Client
         public void Reload()
         {
             _script = new Script();
-            UserData.RegisterAssembly();
             foreach (var kv in _bridges)
             {
                 try { _script.Globals[kv.Key] = DynValue.FromObject(_script, kv.Value); }
